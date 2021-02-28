@@ -4,10 +4,14 @@ $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', ''
 //? when theres error during connection, throw exception
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-
-// select
-
-$statement = $pdo->prepare('SELECT * FROM products ORDER BY create_date DESC');
+$search = $_GET['search'] ?? '';
+if  ($search) {
+  $statement = $pdo->prepare('SELECT * FROM products WHERE title LIKE :title ORDER BY create_date DESC');
+  $statement->bindValue(':title', "%$search%");
+} else {
+  // select
+  $statement = $pdo->prepare('SELECT * FROM products ORDER BY create_date DESC');
+}
 
 $statement->execute();
 // fetch all table as associative array
@@ -35,6 +39,12 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
   <p>
     <a href="create.php" class="btn btn-success">Create Product</a href="create.php">
   </p>
+  <form action="" method="get">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" placeholder="Search for products" name='search' value="<?= $search ?>">
+      <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Search</button>
+    </div>
+  </form>
   <table class="table">
     <thead>
       <tr>
@@ -57,8 +67,8 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
         <td><?= $product['price']?></td>
         <td><?= $product['create_date']?></td>
         <td>
-          <button type="button" class="btn btn-sm btn-outline-primary">Edit</button>
-          <form style='display: inline-block;' action='delete.php' method='post'>
+          <a href='update.php?id=<?= $product['id']?>' type="button" class="btn btn-sm btn-outline-primary">Edit</a>
+          <form style=' display: inline-block;' action='delete.php' method='post'>
             <input type="hidden" name='id' value='<?= $product['id'] ?>'>
             <button type='submit' class="btn btn-sm btn-outline-danger">Delete</button>
           </form>
